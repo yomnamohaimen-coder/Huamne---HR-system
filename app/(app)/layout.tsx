@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
-import { AppTopbar } from "@/components/app-topbar";
 import { getSession, getDashboardRoute, type Session } from "@/lib/auth";
 
 export default function AppLayout({
@@ -35,9 +34,8 @@ export default function AppLayout({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar role={session.role} />
+      <AppSidebar email={session.email} role={session.role} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <AppTopbar email={session.email} role={session.role} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
