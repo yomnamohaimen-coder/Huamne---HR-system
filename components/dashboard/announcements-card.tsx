@@ -43,9 +43,9 @@ export function AnnouncementsCard({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert variant="destructive">
+          <Alert>
             <AlertDescription>
-              We couldn't load announcements
+              Announcements couldn't be loaded.
             </AlertDescription>
           </Alert>
           <Button variant="outline" onClick={handleRefresh} className="w-full sm:w-auto">
@@ -68,7 +68,7 @@ export function AnnouncementsCard({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            No announcements at the moment
+            No announcements at the moment.
           </p>
         </CardContent>
       </Card>

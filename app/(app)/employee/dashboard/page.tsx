@@ -100,7 +100,7 @@ export default function EmployeeDashboard() {
       <AttendanceCard checkInTime={MOCK_DATA.attendance || undefined} />
 
       {/* Quick Actions */}
-      <QuickActions />
+      <QuickActions role="employee" />
 
       {/* Requests + Leave Balance (side by side on desktop) */}
       <div className="grid gap-6 lg:grid-cols-2">

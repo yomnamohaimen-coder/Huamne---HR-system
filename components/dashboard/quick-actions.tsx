@@ -3,25 +3,31 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Calendar, Gift, User } from "lucide-react";
+import { type Role } from "@/lib/auth";
 
-export function QuickActions() {
+interface QuickActionsProps {
+  role?: Role;
+}
+
+export function QuickActions({ role = "employee" }: QuickActionsProps) {
   const router = useRouter();
+  const roleBase = `/${role}`;
 
   const actions = [
     {
       label: "Apply for leave",
       icon: Calendar,
-      onClick: () => router.push("/employee/requests"),
+      onClick: () => router.push(`${roleBase}/requests`),
     },
     {
       label: "Request a benefit",
       icon: Gift,
-      onClick: () => router.push("/employee/requests"),
+      onClick: () => router.push(`${roleBase}/requests`),
     },
     {
       label: "View profile",
       icon: User,
-      onClick: () => router.push("/employee/profile"),
+      onClick: () => router.push(`${roleBase}/profile`),
     },
   ];
 
