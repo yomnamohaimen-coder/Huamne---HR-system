@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -18,12 +19,15 @@ interface Announcement {
 interface AnnouncementsCardProps {
   announcements?: Announcement[];
   hasError?: boolean;
+  showCreateButton?: boolean;
 }
 
 export function AnnouncementsCard({
   announcements = [],
   hasError = false,
+  showCreateButton = false,
 }: AnnouncementsCardProps) {
+  const router = useRouter();
   const [state, setState] = useState<AnnouncementsState>(
     hasError ? "error" : announcements.length > 0 ? "loaded" : "empty"
   );
@@ -66,10 +70,15 @@ export function AnnouncementsCard({
             Announcements
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             No announcements at the moment.
           </p>
+          {showCreateButton && (
+            <Button variant="outline" onClick={() => router.push("/hr/announcements")}>
+              Create announcement
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
