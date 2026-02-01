@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, AlertCircle, Search, X } from "lucide-react";
+import { AlertCircle, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -65,7 +65,8 @@ export function EmployeesTable({
       filtered = filtered.filter(
         (emp) =>
           emp.name.toLowerCase().includes(query) ||
-          emp.email.toLowerCase().includes(query)
+          emp.email.toLowerCase().includes(query) ||
+          emp.department?.toLowerCase().includes(query)
       );
     }
 
@@ -193,7 +194,7 @@ export function EmployeesTable({
         </div>
         <div className="flex gap-2">
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by name, email, or department..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="max-w-sm"
@@ -241,12 +242,12 @@ export function EmployeesTable({
         </p>
       </div>
 
-      {/* Search and Filter Controls */}
+      {/* Search, Sort, and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by name, email, or department..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -262,6 +263,26 @@ export function EmployeesTable({
             </Button>
           )}
         </div>
+        <Select
+          value={`${sortField}-${sortDirection}`}
+          onValueChange={(value) => {
+            const [field, direction] = value.split("-") as [SortField, SortDirection];
+            setSortField(field);
+            setSortDirection(direction);
+          }}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+            <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+            <SelectItem value="role-asc">Role (A-Z)</SelectItem>
+            <SelectItem value="role-desc">Role (Z-A)</SelectItem>
+            <SelectItem value="status-asc">Status (A-Z)</SelectItem>
+            <SelectItem value="status-desc">Status (Z-A)</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
