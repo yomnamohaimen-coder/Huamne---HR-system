@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,8 @@ type EmployeesTableState = "normal" | "empty" | "noResults" | "error";
 interface EmployeesTableProps {
   employees?: Employee[];
   state?: EmployeesTableState;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 type SortField = "name" | "role" | "status";
@@ -48,12 +50,16 @@ type SortDirection = "asc" | "desc";
 export function EmployeesTable({
   employees = [],
   state = "normal",
+  onLoadMore,
+  hasMore = false,
 }: EmployeesTableProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Filter and sort employees
   const filteredAndSortedEmployees = useMemo(() => {
@@ -128,6 +134,33 @@ export function EmployeesTable({
   const handleViewProfile = (employeeId: string) => {
     router.push(`/hr/employees/${employeeId}`);
   };
+
+  // Infinite scroll setup
+  useEffect(() => {
+    if (!onLoadMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observerRef.current = observer;
+
+    const lastRow = tableBodyRef.current?.lastElementChild;
+    if (lastRow) {
+      observer.observe(lastRow);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [filteredAndSortedEmployees, hasMore, onLoadMore]);
 
   if (state === "error") {
     return (
@@ -300,67 +333,76 @@ export function EmployeesTable({
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleSort("name")}
-                  >
-                    Name
-                    {sortField === "name" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleSort("role")}
-                  >
-                    Role / Department
-                    {sortField === "role" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status
-                    {sortField === "status" && (
-                      <span className="ml-1">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAndSortedEmployees.map((employee) => (
-                  <TableRow key={employee.id}>
-                    <TableCell className="font-medium">{employee.name}</TableCell>
-                    <TableCell>
-                      {employee.role}
-                      {employee.department && ` • ${employee.department}`}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(employee.status)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewProfile(employee.id)}
-                      >
-                        View profile
-                      </Button>
-                    </TableCell>
+            <div className="relative max-h-[600px] overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-background z-10 border-b">
+                  <TableRow>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 bg-background"
+                      onClick={() => handleSort("name")}
+                    >
+                      Name
+                      {sortField === "name" && (
+                        <span className="ml-1">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 bg-background"
+                      onClick={() => handleSort("role")}
+                    >
+                      Role / Department
+                      {sortField === "role" && (
+                        <span className="ml-1">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 bg-background"
+                      onClick={() => handleSort("status")}
+                    >
+                      Status
+                      {sortField === "status" && (
+                        <span className="ml-1">
+                          {sortDirection === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </TableHead>
+                    <TableHead className="bg-background">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody ref={tableBodyRef}>
+                  {filteredAndSortedEmployees.map((employee) => (
+                    <TableRow key={employee.id}>
+                      <TableCell className="font-medium">{employee.name}</TableCell>
+                      <TableCell>
+                        {employee.role}
+                        {employee.department && ` • ${employee.department}`}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(employee.status)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewProfile(employee.id)}
+                        >
+                          View profile
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {hasMore && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-4">
+                        Loading more...
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
