@@ -3,7 +3,7 @@
  * TODO: Replace with real auth provider (NextAuth, etc.) in future phases
  */
 
-export type Role = "employee" | "manager" | "hr" | "finance";
+export type Role = "employee" | "manager" | "hr" | "finance" | "super_admin";
 
 export interface Session {
   email: string;
@@ -11,11 +11,13 @@ export interface Session {
 }
 
 // Allowed demo users (emails normalized to lowercase in functions)
+// Email is used for authentication, role is stored in the user record
 const ALLOWED_USERS: Record<string, Role> = {
   "yomna.employee@mail.com": "employee",
   "manager@mail.com": "manager",
   "ahmed.hr@mail.com": "hr",
   "ali.finance@mail.com": "finance", // Normalized from "Ali.finance@mail.com"
+  "admin@mail.com": "super_admin",
 };
 
 // Shared password for all demo users
@@ -106,7 +108,7 @@ export function getSessionFromCookies(cookies: {
   if (!emailCookie || !roleCookie) return null;
   
   const role = roleCookie.value as Role;
-  if (!["employee", "manager", "hr", "finance"].includes(role)) {
+  if (!["employee", "manager", "hr", "finance", "super_admin"].includes(role)) {
     return null;
   }
   
@@ -118,9 +120,35 @@ export function getSessionFromCookies(cookies: {
 
 /**
  * Get dashboard route for a role
+ * Super admin defaults to employee dashboard (can switch views)
  */
 export function getDashboardRoute(role: Role): string {
+  if (role === "super_admin") {
+    // Super admin can access any dashboard, default to employee
+    return "/employee/dashboard";
+  }
   return `/${role}/dashboard`;
+}
+
+/**
+ * Check if a role has access to a specific route
+ * Super admin has access to all routes
+ */
+export function hasRouteAccess(userRole: Role, targetRoute: string): boolean {
+  if (userRole === "super_admin") {
+    return true; // Super admin has access to everything
+  }
+  
+  // Check if route matches user's role namespace
+  const rolePrefix = `/${userRole}`;
+  return targetRoute.startsWith(rolePrefix) || targetRoute === "/";
+}
+
+/**
+ * Get all available roles for role switching (super admin only)
+ */
+export function getAllRoles(): Role[] {
+  return ["employee", "manager", "hr", "finance"];
 }
 
 /**

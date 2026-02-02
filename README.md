@@ -22,6 +22,7 @@ This is the initial MVP implementation with mock authentication and basic app sh
 | manager@mail.com | manager | 1234 |
 | ahmed.hr@mail.com | hr | 1234 |
 | Ali.finance@mail.com | finance | 1234 |
+| admin@mail.com | super_admin | 1234 |
 
 ### Getting Started
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getSessionFromCookies, getDashboardRoute, type Role } from "@/lib/auth";
+import { getSessionFromCookies, getDashboardRoute, hasRouteAccess, type Role } from "@/lib/auth";
 
 /**
  * Middleware for route protection
@@ -37,14 +37,18 @@ export function middleware(request: NextRequest) {
 
   // Check role-based route access
   const role = session.role;
-  const rolePrefix = `/${role}`;
 
   // If accessing root, redirect to role dashboard
   if (pathname === "/") {
     return NextResponse.redirect(new URL(getDashboardRoute(role), request.url));
   }
 
-  // Prevent cross-role access
+  // Super admin has access to all routes
+  if (role === "super_admin") {
+    return NextResponse.next();
+  }
+
+  // Prevent cross-role access for other roles
   // Allow access to own role routes or shared routes (if any)
   if (pathname.startsWith("/employee") && role !== "employee") {
     return NextResponse.redirect(new URL(getDashboardRoute(role), request.url));
