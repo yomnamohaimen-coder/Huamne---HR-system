@@ -63,21 +63,25 @@ export function AnnouncementsCard({
 
   if (announcements.length === 0) {
     return (
-      <Card>
+      <Card className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-muted-foreground" />
             Announcements
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            No announcements at the moment.
-          </p>
+        <CardContent className="flex flex-col flex-1 p-6 pt-0">
+          <div className="space-y-4 flex-1">
+            <p className="text-sm text-muted-foreground">
+              No announcements at the moment.
+            </p>
+          </div>
           {showCreateButton && (
-            <Button variant="outline" onClick={() => router.push("/hr/announcements")}>
-              Create announcement
-            </Button>
+            <div className="mt-auto pt-4">
+              <Button variant="outline" onClick={() => router.push("/hr/announcements")} className="w-full sm:w-auto">
+                Create announcement
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>

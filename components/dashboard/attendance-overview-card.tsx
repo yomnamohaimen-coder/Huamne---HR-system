@@ -99,25 +99,29 @@ export function AttendanceOverviewCard({
 
   // Normal state
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-muted-foreground" />
           Attendance today
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-2xl font-semibold">{present} present</p>
-          <p className="text-lg text-muted-foreground">{onLeave} on leave</p>
-          <p className="text-lg text-muted-foreground">{absent} absent</p>
+      <CardContent className="flex flex-col flex-1 p-6 pt-0">
+        <div className="space-y-4 flex-1">
+          <div className="space-y-2">
+            <p className="text-2xl font-semibold">{present} present</p>
+            <p className="text-lg text-muted-foreground">{onLeave} on leave</p>
+            <p className="text-lg text-muted-foreground">{absent} absent</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Company-wide attendance summary for today.
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Company-wide attendance summary for today.
-        </p>
-        <Button variant="outline" onClick={() => router.push(attendanceRoute)}>
-          View full attendance
-        </Button>
+        <div className="mt-auto pt-4">
+          <Button variant="outline" onClick={() => router.push(attendanceRoute)} className="w-full sm:w-auto">
+            View full attendance
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
