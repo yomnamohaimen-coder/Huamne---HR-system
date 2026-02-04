@@ -43,9 +43,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(getDashboardRoute(role), request.url));
   }
 
-  // Super admin has access to all routes
+  // Allow access to unified routes (shared across roles)
+  if (pathname === "/requests" || pathname.startsWith("/requests/")) {
+    return NextResponse.next();
+  }
+
+  // Super admin has access to all routes (including /admin routes)
   if (role === "super_admin") {
     return NextResponse.next();
+  }
+
+  // Prevent non-admin users from accessing /admin routes
+  if (pathname.startsWith("/admin")) {
+    return NextResponse.redirect(new URL(getDashboardRoute(role), request.url));
   }
 
   // Prevent cross-role access for other roles

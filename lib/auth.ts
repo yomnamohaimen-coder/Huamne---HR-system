@@ -120,12 +120,11 @@ export function getSessionFromCookies(cookies: {
 
 /**
  * Get dashboard route for a role
- * Super admin defaults to employee dashboard (can switch views)
+ * Super admin uses dedicated admin dashboard
  */
 export function getDashboardRoute(role: Role): string {
   if (role === "super_admin") {
-    // Super admin can access any dashboard, default to employee
-    return "/employee/dashboard";
+    return "/admin/dashboard";
   }
   return `/${role}/dashboard`;
 }

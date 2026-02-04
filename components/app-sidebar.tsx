@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { RoleSwitcher } from "@/components/role-switcher";
 
 interface NavItem {
   title: string;
@@ -78,11 +76,6 @@ interface AppSidebarProps {
 export function AppSidebar({ email, role }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [viewAsRole, setViewAsRole] = useState<Role>(() => {
-    if (typeof window === "undefined") return "employee";
-    const stored = localStorage.getItem("humane_view_as_role");
-    return (stored as Role) || "employee";
-  });
   
   // Super admin sees all navigation items
   // Other roles see only their allowed items
@@ -90,27 +83,8 @@ export function AppSidebar({ email, role }: AppSidebarProps) {
     ? navItems 
     : navItems.filter((item) => item.roles.includes(role));
   
-  // Super admin can access any role's routes, use viewAsRole for navigation
-  // Other roles use their own role base
-  const roleBase = role === "super_admin" 
-    ? (viewAsRole !== "super_admin" ? `/${viewAsRole}` : "/employee")
-    : `/${role}`;
-  
-  // Update viewAsRole from pathname
-  useEffect(() => {
-    if (role === "super_admin") {
-      const rolePatterns = ["/employee", "/manager", "/hr", "/finance"];
-      for (const pattern of rolePatterns) {
-        if (pathname.startsWith(pattern)) {
-          const detectedRole = pattern.slice(1) as Role;
-          if (detectedRole !== viewAsRole) {
-            setViewAsRole(detectedRole);
-          }
-          break;
-        }
-      }
-    }
-  }, [pathname, role, viewAsRole]);
+  // Determine route base: super_admin uses /admin, others use their role
+  const roleBase = role === "super_admin" ? "/admin" : `/${role}`;
 
   const getInitials = (email: string) => {
     const parts = email.split("@")[0].split(".");
@@ -134,26 +108,18 @@ export function AppSidebar({ email, role }: AppSidebarProps) {
     router.push("/login");
   };
 
-  // Profile route uses the current view role for super_admin, or actual role for others
-  const profileRoute = role === "super_admin" 
-    ? `${roleBase}/profile`
-    : `${roleBase}/profile`;
+  const profileRoute = `${roleBase}/profile`;
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
       <div className="flex h-16 items-center border-b px-6">
         <h1 className="text-xl font-semibold">Humane</h1>
       </div>
-      {role === "super_admin" && (
-        <RoleSwitcher 
-          currentRole={role} 
-          onRoleChange={(newRole) => setViewAsRole(newRole)}
-        />
-      )}
       <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
         {filteredItems.map((item) => {
           const Icon = item.icon;
-          const href = `${roleBase}${item.href}`;
+          // Use unified route for /requests (no role prefix)
+          const href = item.href === "/requests" ? item.href : `${roleBase}${item.href}`;
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           
           return (
