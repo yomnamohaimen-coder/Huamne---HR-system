@@ -44,7 +44,17 @@ export function middleware(request: NextRequest) {
   }
 
   // Allow access to unified routes (shared across roles)
-  if (pathname === "/requests" || pathname.startsWith("/requests/")) {
+  const unifiedRoutes = [
+    "/requests",
+    "/people",
+    "/attendance",
+    "/talent-acquisition",
+    "/self-service",
+    "/payroll",
+    "/analytics",
+  ];
+  
+  if (unifiedRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
     return NextResponse.next();
   }
 

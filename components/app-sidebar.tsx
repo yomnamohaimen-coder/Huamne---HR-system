@@ -6,10 +6,12 @@ import { cn } from "@/lib/utils";
 import { type Role, clearSession } from "@/lib/auth";
 import {
   LayoutDashboard,
-  FileText,
-  Clock,
-  DollarSign,
   Users,
+  Clock,
+  Briefcase,
+  UserCircle,
+  DollarSign,
+  BarChart3,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -31,10 +33,10 @@ const navItems: NavItem[] = [
     roles: ["employee", "manager", "hr", "finance", "super_admin"],
   },
   {
-    title: "Requests",
-    href: "/requests",
-    icon: FileText,
-    roles: ["employee", "manager", "hr", "super_admin"],
+    title: "People",
+    href: "/people",
+    icon: Users,
+    roles: ["hr", "manager", "super_admin"],
   },
   {
     title: "Attendance",
@@ -43,22 +45,28 @@ const navItems: NavItem[] = [
     roles: ["employee", "manager", "hr", "super_admin"],
   },
   {
+    title: "Talent Acquisition",
+    href: "/talent-acquisition",
+    icon: Briefcase,
+    roles: ["hr", "super_admin"],
+  },
+  {
+    title: "Self Service",
+    href: "/self-service",
+    icon: UserCircle,
+    roles: ["employee", "manager", "hr", "finance", "super_admin"],
+  },
+  {
     title: "Payroll",
     href: "/payroll",
     icon: DollarSign,
-    roles: ["employee", "hr", "finance", "super_admin"],
+    roles: ["hr", "finance", "super_admin"],
   },
   {
-    title: "Team",
-    href: "/team",
-    icon: Users,
-    roles: ["manager", "super_admin"],
-  },
-  {
-    title: "People",
-    href: "/people",
-    icon: Users,
-    roles: ["hr", "super_admin"],
+    title: "Analytics",
+    href: "/analytics",
+    icon: BarChart3,
+    roles: ["hr", "finance", "manager", "super_admin"],
   },
   {
     title: "Settings",
@@ -118,8 +126,9 @@ export function AppSidebar({ email, role }: AppSidebarProps) {
       <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
         {filteredItems.map((item) => {
           const Icon = item.icon;
-          // Use unified route for /requests (no role prefix)
-          const href = item.href === "/requests" ? item.href : `${roleBase}${item.href}`;
+          // Use unified routes (no role prefix) for certain modules
+          const unifiedRoutes = ["/people", "/attendance", "/talent-acquisition", "/self-service", "/payroll", "/analytics"];
+          const href = unifiedRoutes.includes(item.href) ? item.href : `${roleBase}${item.href}`;
           const isActive = pathname === href || pathname.startsWith(`${href}/`);
           
           return (
