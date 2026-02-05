@@ -6,16 +6,20 @@ import { getSession } from "@/lib/auth";
 
 export default function PeoplePage() {
   const router = useRouter();
-  const session = getSession();
   
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") return;
+    
+    const session = getSession();
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    
     // Redirect to employees page by default
     router.replace("/people/employees");
   }, [router]);
-  
-  if (!session) {
-    return null;
-  }
 
   return (
     <div className="flex items-center justify-center min-h-[400px]">

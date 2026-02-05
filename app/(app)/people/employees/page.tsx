@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Plus, Eye, Edit, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -112,6 +119,7 @@ export default function EmployeesPage() {
   const [sortBy, setSortBy] = useState("name");
   const [displayedCount, setDisplayedCount] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   // Filter employees based on search query (ID, Name, or Department)
@@ -252,7 +260,11 @@ export default function EmployeesPage() {
             </Select>
 
             {/* Filters Button */}
-            <Button variant="outline" className="w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto"
+              onClick={() => setIsFilterOpen(true)}
+            >
               <Filter className="mr-2 h-4 w-4" />
               Filters
             </Button>
@@ -364,6 +376,24 @@ export default function EmployeesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Filter Modal */}
+      <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <SheetContent side="right" className="w-[360px]">
+          <SheetHeader>
+            <SheetTitle>Filter Employees</SheetTitle>
+            <SheetDescription>
+              Apply filters to narrow down the employee list
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            {/* Filter options will be added here */}
+            <p className="text-sm text-muted-foreground">
+              Filter options will be available here
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

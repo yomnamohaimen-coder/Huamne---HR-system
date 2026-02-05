@@ -15,6 +15,9 @@ export default function AppLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") return;
+    
     const sessionData = getSession();
     if (!sessionData) {
       router.push("/login");
