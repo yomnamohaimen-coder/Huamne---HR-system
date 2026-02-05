@@ -38,6 +38,29 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
+// Module-level data arrays for form dropdowns
+const departments = [
+  "Engineering", "Human Resources", "Finance", "Design", "Marketing",
+  "Operations", "Sales", "IT", "Customer Support", "Product",
+];
+
+const jobLevels = [
+  "Entry Level",
+  "Mid Level",
+  "Senior",
+  "Lead",
+  "Manager",
+  "Director",
+  "Executive",
+];
+
+const employmentTypes = [
+  "Full Time",
+  "Part Time",
+  "Contract",
+  "Intern",
+];
+
 // Generate mock employee data
 const generateMockEmployees = (count: number) => {
   const firstNames = [
@@ -143,6 +166,15 @@ export default function EmployeesPage() {
     profilePhoto: null as File | null,
   });
 
+  // Form state for Step 2
+  const [step2Data, setStep2Data] = useState({
+    jobTitle: "",
+    department: "",
+    manager: "",
+    employmentType: "",
+    jobLevel: "",
+  });
+
   // Filter state
   const [filters, setFilters] = useState({
     department: [] as string[],
@@ -154,6 +186,11 @@ export default function EmployeesPage() {
   const uniqueDepartments = useMemo(() => {
     const depts = Array.from(new Set(ALL_EMPLOYEES.map(e => e.department)));
     return depts.sort();
+  }, []);
+
+  // Get active employees for manager dropdown
+  const activeEmployees = useMemo(() => {
+    return ALL_EMPLOYEES.filter(e => e.status === "active");
   }, []);
 
   // Calculate filter counts
@@ -610,6 +647,13 @@ export default function EmployeesPage() {
               phoneNumber: "",
               profilePhoto: null,
             });
+            setStep2Data({
+              jobTitle: "",
+              department: "",
+              manager: "",
+              employmentType: "",
+              jobLevel: "",
+            });
           }
         }}
       >
@@ -937,11 +981,124 @@ export default function EmployeesPage() {
                 </div>
               )}
               {currentStep === 2 && (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Step 2: Job Details
-                  </p>
-                  {/* Step 2 content will go here */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold mb-4">Job Details</h3>
+                    <div className="space-y-4">
+                      {/* Job Title */}
+                      <div className="space-y-2">
+                        <Label htmlFor="jobTitle">
+                          Job Title <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="jobTitle"
+                          placeholder="e.g., Software Engineer, Marketing Manager"
+                          value={step2Data.jobTitle}
+                          onChange={(e) =>
+                            setStep2Data({ ...step2Data, jobTitle: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+
+                      {/* Department */}
+                      <div className="space-y-2">
+                        <Label htmlFor="department">
+                          Department <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={step2Data.department}
+                          onValueChange={(value) =>
+                            setStep2Data({ ...step2Data, department: value })
+                          }
+                        >
+                          <SelectTrigger id="department">
+                            <SelectValue placeholder="Select department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments
+                              .sort((a, b) => a.localeCompare(b))
+                              .map((dept) => (
+                                <SelectItem key={dept} value={dept}>
+                                  {dept}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Manager/Reports To */}
+                      <div className="space-y-2">
+                        <Label htmlFor="manager">
+                          Manager / Reports To <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={step2Data.manager}
+                          onValueChange={(value) =>
+                            setStep2Data({ ...step2Data, manager: value })
+                          }
+                        >
+                          <SelectTrigger id="manager">
+                            <SelectValue placeholder="Select manager" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Manager</SelectItem>
+                            {activeEmployees.map((employee) => (
+                              <SelectItem key={employee.id} value={employee.id}>
+                                {employee.name} - {employee.jobTitle}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Employment Type */}
+                      <div className="space-y-2">
+                        <Label htmlFor="employmentType">
+                          Employment Type <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={step2Data.employmentType}
+                          onValueChange={(value) =>
+                            setStep2Data({ ...step2Data, employmentType: value })
+                          }
+                        >
+                          <SelectTrigger id="employmentType">
+                            <SelectValue placeholder="Select employment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {employmentTypes.map((type) => (
+                              <SelectItem key={type} value={type.toLowerCase().replace(" ", "-")}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Job Level */}
+                      <div className="space-y-2">
+                        <Label htmlFor="jobLevel">Job Level</Label>
+                        <Select
+                          value={step2Data.jobLevel}
+                          onValueChange={(value) =>
+                            setStep2Data({ ...step2Data, jobLevel: value })
+                          }
+                        >
+                          <SelectTrigger id="jobLevel">
+                            <SelectValue placeholder="Select job level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {jobLevels.map((level) => (
+                              <SelectItem key={level} value={level.toLowerCase().replace(" ", "-")}>
+                                {level}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               {currentStep === 3 && (
