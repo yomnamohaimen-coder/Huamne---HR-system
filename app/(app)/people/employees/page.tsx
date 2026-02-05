@@ -48,6 +48,10 @@ const generateMockEmployees = (count: number) => {
   ];
   const employmentTypes = ["full time", "part time", "contract", "intern"] as const;
   const statuses = ["active", "on leave"] as const;
+  const managers = [
+    "Ahmed Hassan", "Sarah Mohamed", "Omar Ali", "Layla Ahmed", "Tarek Youssef",
+    "Mohamed Khalil", "Fatima Nasser", "Ali Said", "Aya Fouad", "Hassan Rizk",
+  ];
 
   return Array.from({ length: count }, (_, i) => {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -59,6 +63,7 @@ const generateMockEmployees = (count: number) => {
       department: departments[Math.floor(Math.random() * departments.length)],
       employmentType: employmentTypes[Math.floor(Math.random() * employmentTypes.length)],
       status: statuses[Math.floor(Math.random() * statuses.length)],
+      manager: managers[Math.floor(Math.random() * managers.length)],
     };
   });
 };
@@ -66,14 +71,31 @@ const generateMockEmployees = (count: number) => {
 // Generate initial large dataset
 const ALL_EMPLOYEES = generateMockEmployees(100);
 
-// Generate avatar URL using UI Avatars service
+// Generate avatar URL using UI Avatars service with subtle colors
 const getAvatarUrl = (name: string) => {
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=128&bold=true`;
+  // Use a subtle color palette (pastel colors)
+  const subtleColors = [
+    "e3f2fd", // Light blue
+    "f3e5f5", // Light purple
+    "e8f5e9", // Light green
+    "fff3e0", // Light orange
+    "fce4ec", // Light pink
+    "e0f2f1", // Light teal
+    "f1f8e9", // Light lime
+    "ede7f6", // Light indigo
+    "e8eaf6", // Light blue-gray
+    "fff9c4", // Light yellow
+  ];
+  
+  // Use name hash to consistently assign colors
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colorIndex = Math.abs(hash) % subtleColors.length;
+  const backgroundColor = subtleColors[colorIndex];
+  
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${backgroundColor}&color=374151&size=128&bold=false`;
 };
 
 // Get initials for fallback
@@ -87,6 +109,7 @@ const getInitials = (name: string) => {
 
 export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("name");
   const [displayedCount, setDisplayedCount] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -109,22 +132,52 @@ export default function EmployeesPage() {
     return employees;
   }, [searchQuery]);
 
+  // Sort employees based on selected sort option
+  const sortedEmployees = useMemo(() => {
+    const sorted = [...filteredEmployees];
+    
+    switch (sortBy) {
+      case "name":
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "id":
+        sorted.sort((a, b) => a.id.localeCompare(b.id));
+        break;
+      case "department":
+        sorted.sort((a, b) => a.department.localeCompare(b.department));
+        break;
+      case "jobTitle":
+        sorted.sort((a, b) => a.jobTitle.localeCompare(b.jobTitle));
+        break;
+      case "status":
+        sorted.sort((a, b) => a.status.localeCompare(b.status));
+        break;
+      default:
+        break;
+    }
+    
+    return sorted;
+  }, [filteredEmployees, sortBy]);
+
   // Get employees to display (for infinite scroll)
   const displayedEmployees = useMemo(() => {
-    return filteredEmployees.slice(0, displayedCount);
-  }, [filteredEmployees, displayedCount]);
+    return sortedEmployees.slice(0, displayedCount);
+  }, [sortedEmployees, displayedCount]);
 
   // Load more employees
   const loadMore = useCallback(() => {
-    if (isLoading || displayedCount >= filteredEmployees.length) return;
+    if (isLoading || displayedCount >= sortedEmployees.length) return;
     
     setIsLoading(true);
     // Simulate API delay
     setTimeout(() => {
-      setDisplayedCount((prev) => Math.min(prev + 20, filteredEmployees.length));
+      setDisplayedCount((prev) => Math.min(prev + 20, sortedEmployees.length));
       setIsLoading(false);
     }, 300);
-  }, [isLoading, displayedCount, filteredEmployees.length]);
+  }, [isLoading, displayedCount, sortedEmployees.length]);
 
   // Handle scroll event for infinite scroll
   useEffect(() => {
@@ -143,10 +196,10 @@ export default function EmployeesPage() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [loadMore]);
 
-  // Reset displayed count when search changes
+  // Reset displayed count when search or sort changes
   useEffect(() => {
     setDisplayedCount(20);
-  }, [searchQuery]);
+  }, [searchQuery, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -184,7 +237,7 @@ export default function EmployeesPage() {
             </div>
             
             {/* Sort By Dropdown */}
-            <Select defaultValue="name">
+            <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -218,6 +271,7 @@ export default function EmployeesPage() {
                   <TableHead>Name</TableHead>
                   <TableHead>Job Title</TableHead>
                   <TableHead>Department</TableHead>
+                  <TableHead>Manager</TableHead>
                   <TableHead>Employment Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -226,7 +280,7 @@ export default function EmployeesPage() {
               <TableBody>
                 {displayedEmployees.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       No employees found matching your search.
                     </TableCell>
                   </TableRow>
@@ -246,6 +300,7 @@ export default function EmployeesPage() {
                   <TableCell className="font-medium">{employee.name}</TableCell>
                   <TableCell>{employee.jobTitle}</TableCell>
                   <TableCell>{employee.department}</TableCell>
+                  <TableCell>{employee.manager}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="capitalize">
                       {employee.employmentType}
@@ -299,10 +354,10 @@ export default function EmployeesPage() {
             )}
             
             {/* End of list indicator */}
-            {!isLoading && displayedCount >= filteredEmployees.length && filteredEmployees.length > 0 && (
+            {!isLoading && displayedCount >= sortedEmployees.length && sortedEmployees.length > 0 && (
               <div className="flex items-center justify-center py-4">
                 <p className="text-sm text-muted-foreground">
-                  Showing all {filteredEmployees.length} employees
+                  Showing all {sortedEmployees.length} employees
                 </p>
               </div>
             )}
