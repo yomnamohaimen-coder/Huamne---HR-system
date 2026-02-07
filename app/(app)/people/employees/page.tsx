@@ -175,6 +175,14 @@ export default function EmployeesPage() {
     jobLevel: "",
   });
 
+  // Form state for Step 3
+  const [step3Data, setStep3Data] = useState({
+    startDate: "",
+    employmentStatus: "",
+    endDate: "",
+    notes: "",
+  });
+
   // Filter state
   const [filters, setFilters] = useState({
     department: [] as string[],
@@ -654,6 +662,12 @@ export default function EmployeesPage() {
               employmentType: "",
               jobLevel: "",
             });
+            setStep3Data({
+              startDate: "",
+              employmentStatus: "",
+              endDate: "",
+              notes: "",
+            });
           }
         }}
       >
@@ -664,10 +678,10 @@ export default function EmployeesPage() {
 
           {/* Step Indicator */}
           <div className="flex-shrink-0 px-6 pb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center gap-4">
               {/* Step 1 */}
-              <div className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
+              <div className="flex items-center">
+                <div className="flex flex-col items-center">
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                       currentStep >= 1
@@ -704,15 +718,15 @@ export default function EmployeesPage() {
                   </span>
                 </div>
                 <div
-                  className={`flex-1 h-0.5 mx-2 ${
+                  className={`w-12 h-0.5 mx-2 ${
                     currentStep > 1 ? "bg-primary" : "bg-muted"
                   }`}
                 />
               </div>
 
               {/* Step 2 */}
-              <div className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
+              <div className="flex items-center">
+                <div className="flex flex-col items-center">
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                       currentStep >= 2
@@ -749,15 +763,15 @@ export default function EmployeesPage() {
                   </span>
                 </div>
                 <div
-                  className={`flex-1 h-0.5 mx-2 ${
+                  className={`w-12 h-0.5 mx-2 ${
                     currentStep > 2 ? "bg-primary" : "bg-muted"
                   }`}
                 />
               </div>
 
               {/* Step 3 */}
-              <div className="flex items-center flex-1">
-                <div className="flex flex-col items-center flex-1">
+              <div className="flex items-center">
+                <div className="flex flex-col items-center">
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                       currentStep >= 3
@@ -1102,11 +1116,81 @@ export default function EmployeesPage() {
                 </div>
               )}
               {currentStep === 3 && (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Step 3: Employment Details
-                  </p>
-                  {/* Step 3 content will go here */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold mb-4">Employment Details</h3>
+                    <div className="space-y-4">
+                      {/* Start Date */}
+                      <div className="space-y-2">
+                        <Label htmlFor="startDate">
+                          Start Date <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={step3Data.startDate}
+                          onChange={(e) =>
+                            setStep3Data({ ...step3Data, startDate: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+
+                      {/* Employment Status */}
+                      <div className="space-y-2">
+                        <Label htmlFor="employmentStatus">
+                          Employment Status <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={step3Data.employmentStatus}
+                          onValueChange={(value) =>
+                            setStep3Data({ ...step3Data, employmentStatus: value })
+                          }
+                        >
+                          <SelectTrigger id="employmentStatus">
+                            <SelectValue placeholder="Select employment status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="on leave">On Leave</SelectItem>
+                            <SelectItem value="terminated">Terminated</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* End Date - Conditional */}
+                      {(step3Data.employmentStatus === "terminated" || 
+                        step3Data.employmentStatus === "on leave") && (
+                        <div className="space-y-2">
+                          <Label htmlFor="endDate">End Date</Label>
+                          <Input
+                            id="endDate"
+                            type="date"
+                            value={step3Data.endDate}
+                            onChange={(e) =>
+                              setStep3Data({ ...step3Data, endDate: e.target.value })
+                            }
+                            min={step3Data.startDate || undefined}
+                          />
+                        </div>
+                      )}
+
+                      {/* Notes/Comments */}
+                      <div className="space-y-2">
+                        <Label htmlFor="notes">Notes/Comments</Label>
+                        <textarea
+                          id="notes"
+                          rows={4}
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          placeholder="Add any additional notes or comments..."
+                          value={step3Data.notes}
+                          onChange={(e) =>
+                            setStep3Data({ ...step3Data, notes: e.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
