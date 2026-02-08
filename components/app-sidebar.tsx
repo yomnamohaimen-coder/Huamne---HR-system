@@ -72,6 +72,24 @@ const navItems: NavItem[] = [
     href: "/attendance",
     icon: Clock,
     roles: ["employee", "manager", "hr", "super_admin"],
+    children: [
+      {
+        title: "Time Tracking",
+        href: "/attendance/time-tracking",
+      },
+      {
+        title: "Leaves",
+        href: "/attendance/leaves",
+      },
+      {
+        title: "Shifts",
+        href: "/attendance/shifts",
+      },
+      {
+        title: "Reports",
+        href: "/attendance/reports",
+      },
+    ],
   },
   {
     title: "Talent Acquisition",
